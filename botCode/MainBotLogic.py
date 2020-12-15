@@ -33,7 +33,7 @@ def working_with_the_database(registered_channels=None):
         pickle.load(open("configurationFile/database.sm", "rb+"))
     except Exception as E:
         # download of reset the database
-        pickle.dump(dict({732867017849438288: dict({788135825970823179: [732892299423383572, "🚪Room", []]})}),
+        pickle.dump(dict({732867017849438288: dict({761921779886194738: [761680258993750088, "🚪Room", []]})}),
                     open("configurationFile/database.sm", "rb+"))
     # update the database if required
     if registered_channels != None:
@@ -130,9 +130,9 @@ async def addmarker(ctx, channel_id=None, category_id=None, layout_text=None):
             error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
             error_embed.add_field(name="For example (standard input without additional content):",
-                                  value="```room/addmarker 788135825970823179 732892299423383572```")
+                                  value="```room/addmarker 761921779886194738 761680258993750088```")
             error_embed.add_field(name="For example (with the introduction of the standard name of a channel):",
-                                  value="```room/addmarker 788135825970823179 732892299423383572 🌟Party```")
+                                  value="```room/addmarker 761921779886194738 761680258993750088 🎄Party```")
             error_embed.set_footer(text="P.S. Enter the standard channel name without spaces")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
