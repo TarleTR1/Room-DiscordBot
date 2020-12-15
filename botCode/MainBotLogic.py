@@ -16,6 +16,7 @@ from discord.ext import commands as commands
 from configurationFile import BotConfig as BotConfig
 import datetime as datetime
 import pickle as pickle
+from random import randint as randint
 
 # creating a client for the bot
 client = discord.Client()
@@ -33,7 +34,7 @@ def working_with_the_database(registered_channels=None):
         pickle.load(open("configurationFile/database.sm", "rb+"))
     except Exception as E:
         # download of reset the database
-        pickle.dump(dict({732867017849438288: dict({788369246140104776: [761680258993750088, "🚪Room", []]})}),
+        pickle.dump(dict({60547261464449: dict({60547261464449: [60547261464449, "🚪Room", []]})}),
                     open("configurationFile/database.sm", "rb+"))
     # update the database if required
     if registered_channels != None:
@@ -67,7 +68,7 @@ async def help(ctx):
     help_embed = discord.Embed(colour=discord.Color(0x3b1a11), url=BotConfig.BotInvite,
                                title="**Room** - Сlick here to __invite__ to your server😏")
     help_embed.add_field(name="Basic command for adding a marker:", inline=True,
-                         value="**room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)")
+                         value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_\n┗ **room/deletemarker** - then enter the channel ID)")
     help_embed.add_field(name="Technical support site:", value=f"{BotConfig.BotSite}", inline=True)
     help_embed.set_footer(text="P.S. To add a marker you must have administrator rights")
     await ctx.send(embed=help_embed)
@@ -91,7 +92,7 @@ async def addmarker(ctx, channel_id=None, category_id=None, layout_text=None):
             if layout_text == None:
                 layout_text = "🚪Room"
             # adding a marker if this is the first channel on the server
-            if list(working_with_the_database().keys()) == []:
+            if ctx.guild.id not in list(working_with_the_database().keys()):
                 # uploading new data to the database
                 updated_database = working_with_the_database()
                 updated_database.update(dict({ctx.guild.id: dict({channel_id: [category_id, layout_text, []]})}))
@@ -130,9 +131,9 @@ async def addmarker(ctx, channel_id=None, category_id=None, layout_text=None):
             error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
             error_embed.add_field(name="For example (standard input without additional content):",
-                                  value="```room/addmarker 788369246140104776 761680258993750088```")
+                                  value=f"```room/addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)}```")
             error_embed.add_field(name="For example (with the introduction of the standard name of a channel):",
-                                  value="```room/addmarker 788369246140104776 761680258993750088 🎄Party```")
+                                  value=f"```room/addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} 🎄Party```")
             error_embed.set_footer(text="P.S. Enter the standard channel name without spaces")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
@@ -158,6 +159,79 @@ async def addmarker_error(ctx, error):
     # generating an embed that informs you of an error and sending it
     error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
                                 title="**Room** - You __don't have__ enough __rights__ to add markers🤨")
+    await ctx.send(embed=error_embed)
+
+
+# adding a marker to a channel with a category
+@client.command(pass_context=True)
+@commands.has_permissions(administrator=True)
+async def deletemarker(ctx, channel_id=None):
+    # sending data to the terminal
+    print(datetime.datetime.today())
+    print(f"{ctx.guild.name}-->{ctx.author}")
+    print(f"Command name: room/deletemarker {list(ctx.args)[1:]}")
+    # logic for adding a marker
+    try:
+        # checking for correct spelling
+        if channel_id != None and len(list(channel_id)) == 18:
+            # correction of the entered data
+            channel_id = int(channel_id)
+            #
+            if ctx.guild.id not in list(working_with_the_database().keys()):
+                # creating and forming an embed structure
+                delete_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
+                                             title="**Room** - There is __nothing to delete__ on this server yet😄")
+            elif channel_id not in list(working_with_the_database()[ctx.guild.id].keys()):
+                # creating and forming an embed structure
+                delete_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
+                                             title="**Room** - In any case, this channel __wasn't in__ the database🧐")
+            else:
+                # uploading new data to the database
+                updated_database = working_with_the_database()
+                updated_database[ctx.guild.id].pop(channel_id)
+                working_with_the_database(registered_channels=updated_database)
+                # creating and forming an embed structure
+                delete_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
+                                             title="**Room** - The specified channel was __successfully deleted__😊")
+            # adding informative data and sending embed
+            delete_embed.add_field(name="Channel ID:", value=f"{channel_id}", inline=True)
+            delete_embed.add_field(name="Delete status:", value="The channel is not in the database", inline=True)
+            delete_embed.add_field(name="Сurrent commands now:", value="┣ **room/help**\n┗ **room/addmarker**",
+                                   inline=True)
+            await ctx.send(embed=delete_embed)
+        # warnings about incorrect data
+        else:
+            # creating and sending embed
+            error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
+                                        title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
+            error_embed.add_field(name="Example of the correct spelling of this command:",
+                                  value=f"```room/deletemarker {randint(10 ** (18 - 1), 10 ** 18 - 1)}```", inline=True)
+            error_embed.add_field(name="Сurrent commands now:", value="┣ **room/help**\n┗ **room/addmarker**",
+                                  inline=True)
+            await ctx.send(embed=error_embed)
+            # sending data to the terminal
+            print(f"ERROR: Incorrect data entry")
+    # catching errors when adding a marker
+    except Exception as E:
+        # generating an embed that informs you of an error and sending it
+        error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
+                                    title="**Room** - Oops, something __went wrong__ when you removed the marker😳")
+        error_embed.add_field(name="Technical support site:", value=f"{BotConfig.BotSite}", inline=True)
+        error_embed.add_field(name="Error date:", value=f"{datetime.datetime.today()}", inline=True)
+        error_embed.add_field(name="Сause of error:", value=f"{E}", inline=True)
+        await ctx.send(embed=error_embed)
+        # sending data to the terminal
+        print(f"ERROR: {E}")
+    # sending data to the terminal
+    print("-----------------------------")
+
+
+# catching errors about a lack of rights
+@deletemarker.error
+async def deletemarker_error(ctx, error):
+    # generating an embed that informs you of an error and sending it
+    error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
+                                title="**Room** - You __don't have__ enough __rights__ to delete markers🤨")
     await ctx.send(embed=error_embed)
 
 
