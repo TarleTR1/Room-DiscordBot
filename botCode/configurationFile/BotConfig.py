@@ -10,7 +10,7 @@
 ########################################
 
 # MASTER DATA FOR THE BOT'S OPERATION
-BotToken = ""
+BotToken = "Nzg3Mjk4MjYzOTM3OTc0MzEy.X9S6pQ.dx2x3X-Y-TIaiZUmjJeUQan9KH0"
 BotInvite = "https://discord.com/api/oauth2/authorize?client_id=787298263937974312&permissions=8&scope=bot"
 BotSite = "https://smtechnology.info"
 
