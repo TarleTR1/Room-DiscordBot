@@ -11,7 +11,6 @@
 
 # import main modules
 import discord as discord
-from discord import Activity, ActivityType
 from discord.ext import commands as commands
 from configurationFile import BotConfig as BotConfig
 import datetime as datetime
