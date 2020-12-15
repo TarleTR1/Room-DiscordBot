@@ -167,6 +167,7 @@ async def on_voice_state_update(member: discord.Member, before, after):
     try:
         # checking for connection to a specific channel
         if after.channel is not None:
+            # communicating and working with the server where the user is sitting
             for guild in client.guilds:
                 # checking for the presence of a server in the database
                 if guild.id not in list(working_with_the_database().keys()):
@@ -201,12 +202,8 @@ async def on_voice_state_update(member: discord.Member, before, after):
                             # renaming a channel if it is active
                             if len(channel.members) != 0:
                                 # renaming a channel and creating a "channels branch"
-                                if channel_number != len(updated_database[guild.id][channel_id_reservation][2]) - 1:
-                                    await channel.edit(
-                                        name=f"┣{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
-                                else:
-                                    await channel.edit(
-                                        name=f"┗{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
+                                await channel.edit(
+                                    name=f"┣{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
                                 # shift the register to process the next channel, since this is a positive case
                                 channel_number += 1
                             # deleting a channel from the created ones, if there is no one in the channel, and the wait_for method did not have time to detect it
@@ -218,6 +215,11 @@ async def on_voice_state_update(member: discord.Member, before, after):
                         except Exception as E:
                             updated_database[guild.id][channel_id_reservation][2].remove(
                                 updated_database[guild.id][channel_id_reservation][2][channel_number])
+                    # rename the last channel and close the " channel branch"
+                    if len(updated_database[guild.id][channel_id_reservation][2]) != 0:
+                        channel = guild.get_channel(updated_database[guild.id][channel_id_reservation][2][-1])
+                        await channel.edit(
+                            name=f"┗{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number}]")
                     # saving the updated array with channels to the main database
                     working_with_the_database(registered_channels=updated_database)
                     # waiting for the channel to clear
@@ -244,12 +246,8 @@ async def on_voice_state_update(member: discord.Member, before, after):
                             # renaming a channel if it is active
                             if len(channel.members) != 0:
                                 # renaming a channel and creating a "channels branch"
-                                if channel_number != len(updated_database[guild.id][channel_id_reservation][2]) - 1:
-                                    await channel.edit(
-                                        name=f"┣{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
-                                else:
-                                    await channel.edit(
-                                        name=f"┗{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
+                                await channel.edit(
+                                    name=f"┣{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
                                 # shift the register to process the next channel, since this is a positive case
                                 channel_number += 1
                             # deleting a channel from the created ones, if there is no one in the channel, and the wait_for method did not have time to detect it
@@ -261,6 +259,11 @@ async def on_voice_state_update(member: discord.Member, before, after):
                         except Exception as E:
                             updated_database[guild.id][channel_id_reservation][2].remove(
                                 updated_database[guild.id][channel_id_reservation][2][channel_number])
+                    # rename the last channel and close the " channel branch"
+                    if len(updated_database[guild.id][channel_id_reservation][2]) != 0:
+                        channel = guild.get_channel(updated_database[guild.id][channel_id_reservation][2][-1])
+                        await channel.edit(
+                            name=f"┗{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number}]")
                     # saving the updated array with channels to the main database
                     working_with_the_database(registered_channels=updated_database)
     # catching errors and sending them to the terminal
