@@ -157,7 +157,7 @@ async def addmarker(ctx, channel_id=None, category_id=None, layout_text=None):
 async def addmarker_error(ctx, error):
     # generating an embed that informs you of an error and sending it
     error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
-                                title="**Room** - You don't have enough rights to add markers🤨")
+                                title="**Room** - You __don't have__ enough __rights__ to add markers🤨")
     await ctx.send(embed=error_embed)
 
 
