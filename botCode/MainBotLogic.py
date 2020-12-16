@@ -196,8 +196,8 @@ async def deletemarker(ctx, channel_id=None):
             # adding informative data and sending embed
             delete_embed.add_field(name="Channel ID:", value=f"{channel_id}", inline=True)
             delete_embed.add_field(name="Delete status:", value="The channel is not in the database", inline=True)
-            delete_embed.add_field(name="Сurrent commands now:", inline=True,
-                                   value="┣ **room/help**\n┣ **room/addmarker**\n┗ **room/info**")
+            delete_embed.add_field(name="Recommended commands:", inline=True,
+                                   value="┣ **room/addmarker**\n┗ **room/info**")
             await ctx.send(embed=delete_embed)
         # warnings about incorrect data
         else:
@@ -206,8 +206,8 @@ async def deletemarker(ctx, channel_id=None):
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
             error_embed.add_field(name="Example of the correct spelling of this command:",
                                   value=f"```room/deletemarker {randint(10 ** (18 - 1), 10 ** 18 - 1)}```", inline=True)
-            error_embed.add_field(name="Сurrent commands now:", inline=True,
-                                  value="┣ **room/help**\n┣ **room/addmarker**\n┗ **room/info**")
+            error_embed.add_field(name="Recommended commands:", inline=True,
+                                  value="┣ **room/help**\n┗ **room/info**")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
             print(f"ERROR: Incorrect data entry")
