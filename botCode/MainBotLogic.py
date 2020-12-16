@@ -67,7 +67,7 @@ async def help(ctx):
     # creating and sending embed
     help_embed = discord.Embed(colour=discord.Color(0x3b1a11), url=BotConfig.BotInvite,
                                title="**Room** - Сlick here to __invite__ to your server😏")
-    help_embed.add_field(name="Basic command for adding a marker:", inline=True,
+    help_embed.add_field(name="List of all current commands:", inline=True,
                          value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **room/deletemarker** - then enter the channel ID\n┗ **room/info** - next, you will immediately see all the information about all the markers on your server")
     help_embed.add_field(name="Technical support site:", value=f"{BotConfig.BotSite}", inline=True)
     help_embed.set_footer(text="P.S. To add a marker you must have administrator rights")
