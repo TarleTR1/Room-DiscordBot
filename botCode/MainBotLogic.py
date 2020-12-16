@@ -68,7 +68,7 @@ async def help(ctx):
     help_embed = discord.Embed(colour=discord.Color(0x3b1a11), url=BotConfig.BotInvite,
                                title="**Room** - Сlick here to __invite__ to your server😏")
     help_embed.add_field(name="Basic command for adding a marker:", inline=True,
-                         value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_\n┗ **room/deletemarker** - then enter the channel ID)")
+                         value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **room/deletemarker** - then enter the channel ID\n┗ **room/info** - next, you will immediately see all the information about all the markers on your server")
     help_embed.add_field(name="Technical support site:", value=f"{BotConfig.BotSite}", inline=True)
     help_embed.set_footer(text="P.S. To add a marker you must have administrator rights")
     await ctx.send(embed=help_embed)
@@ -162,7 +162,7 @@ async def addmarker_error(ctx, error):
     await ctx.send(embed=error_embed)
 
 
-# adding a marker to a channel with a category
+# deleting an installed marker
 @client.command(pass_context=True)
 @commands.has_permissions(administrator=True)
 async def deletemarker(ctx, channel_id=None):
@@ -170,13 +170,13 @@ async def deletemarker(ctx, channel_id=None):
     print(datetime.datetime.today())
     print(f"{ctx.guild.name}-->{ctx.author}")
     print(f"Command name: room/deletemarker {list(ctx.args)[1:]}")
-    # logic for adding a marker
+    # logic for delete a marker
     try:
         # checking for correct spelling
         if channel_id != None and len(list(channel_id)) == 18:
             # correction of the entered data
             channel_id = int(channel_id)
-            #
+            # the presence of markers
             if ctx.guild.id not in list(working_with_the_database().keys()):
                 # creating and forming an embed structure
                 delete_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
@@ -196,8 +196,8 @@ async def deletemarker(ctx, channel_id=None):
             # adding informative data and sending embed
             delete_embed.add_field(name="Channel ID:", value=f"{channel_id}", inline=True)
             delete_embed.add_field(name="Delete status:", value="The channel is not in the database", inline=True)
-            delete_embed.add_field(name="Сurrent commands now:", value="┣ **room/help**\n┗ **room/addmarker**",
-                                   inline=True)
+            delete_embed.add_field(name="Сurrent commands now:", inline=True,
+                                   value="┣ **room/help**\n┣ **room/addmarker**\n┗ **room/info**")
             await ctx.send(embed=delete_embed)
         # warnings about incorrect data
         else:
@@ -206,12 +206,12 @@ async def deletemarker(ctx, channel_id=None):
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
             error_embed.add_field(name="Example of the correct spelling of this command:",
                                   value=f"```room/deletemarker {randint(10 ** (18 - 1), 10 ** 18 - 1)}```", inline=True)
-            error_embed.add_field(name="Сurrent commands now:", value="┣ **room/help**\n┗ **room/addmarker**",
-                                  inline=True)
+            error_embed.add_field(name="Сurrent commands now:", inline=True,
+                                  value="┣ **room/help**\n┣ **room/addmarker**\n┗ **room/info**")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
             print(f"ERROR: Incorrect data entry")
-    # catching errors when adding a marker
+    # catching errors when deleting a marker
     except Exception as E:
         # generating an embed that informs you of an error and sending it
         error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
@@ -235,6 +235,61 @@ async def deletemarker_error(ctx, error):
     await ctx.send(embed=error_embed)
 
 
+# view information about all existing markers
+@client.command(pass_context=True)
+@commands.has_permissions(administrator=True)
+async def info(ctx):
+    # sending data to the terminal
+    print(datetime.datetime.today())
+    print(f"{ctx.guild.name}-->{ctx.author}")
+    print(f"Command name: room/info {list(ctx.args)[1:]}")
+    # the logic for generating the output information
+    try:
+        # comparison for the presence of markers on the server
+        if ctx.guild.id not in list(working_with_the_database().keys()):
+            # creating and forming an embed structure
+            info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
+                                       title="**Room** - Wow, it looks like you __haven't put__ any markers yet😀")
+        elif list(working_with_the_database()[ctx.guild.id].keys()) == []:
+            # creating and forming an embed structure
+            info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
+                                       title="**Room** - Wow, looks like __you deleted__ all your markers😮")
+        else:
+            # creating and forming an embed structure
+            info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
+                                       title="**Room** - Yes, of course, here are __all the channels__ with __markers__😎")
+            # listing of all information about the token on the server
+            for channel in list(working_with_the_database()[ctx.guild.id].keys()):
+                info_embed.add_field(name="Marker data:", inline=True,
+                                     value=f"```Channel ID: {channel}\nCategory ID: {working_with_the_database()[ctx.guild.id][channel][0]}\nStandart name: {working_with_the_database()[ctx.guild.id][channel][1]}\nSome data: {working_with_the_database()[ctx.guild.id][channel][2]}```")
+        # concluding information and sending embed
+        info_embed.set_footer(
+            text="P.S. The last item in the output data for the channel is the active channel IDs created by the bot")
+        await ctx.send(embed=info_embed)
+    # catching errors when checking the information on the markers
+    except Exception as E:
+        # generating an embed that informs you of an error and sending it
+        error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
+                                    title="**Room** - Oops, something __went wrong__ when you removed the marker😳")
+        error_embed.add_field(name="Technical support site:", value=f"{BotConfig.BotSite}", inline=True)
+        error_embed.add_field(name="Error date:", value=f"{datetime.datetime.today()}", inline=True)
+        error_embed.add_field(name="Сause of error:", value=f"{E}", inline=True)
+        await ctx.send(embed=error_embed)
+        # sending data to the terminal
+        print(f"ERROR: {E}")
+    # sending data to the terminal
+    print("-----------------------------")
+
+
+# catching errors about a lack of rights
+@info.error
+async def info_error(ctx, error):
+    # generating an embed that informs you of an error and sending it
+    error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
+                                title="**Room** - You __don't have__ enough __ rights__ to view existing markers🤨")
+    await ctx.send(embed=error_embed)
+
+
 # creating a separate voice channel when joining a specific channel
 @client.event
 async def on_voice_state_update(member: discord.Member, before, after):
@@ -253,10 +308,11 @@ async def on_voice_state_update(member: discord.Member, before, after):
                         name=f"┗{working_with_the_database()[guild.id][after.channel.id][1]} [{len(working_with_the_database()[guild.id][after.channel.id][2]) + 1}]",
                         category=discord.utils.get(guild.categories,
                                                    id=working_with_the_database()[guild.id][after.channel.id][0]))
-                    # moving a user to a new channel and reserving an ID
+                    # reserving channels ID for further work with the user
                     channel_id_reservation = after.channel.id
+                    new_channel_id_reservation = new_voice_channel.id
+                    # moving a user to a new channel
                     await member.move_to(new_voice_channel)
-                    new_channel_id_reservation = after.channel.id
                     # uploading new data to the database
                     updated_database = working_with_the_database()
                     updated_database[guild.id][channel_id_reservation][2].append(new_channel_id_reservation)
