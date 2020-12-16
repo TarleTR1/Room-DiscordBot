@@ -70,7 +70,7 @@ async def help(ctx):
     help_embed.add_field(name="List of all current commands:", inline=True,
                          value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **room/deletemarker** - then enter the channel ID\n┗ **room/info** - next, you will immediately see all the information about all the markers on your server")
     help_embed.add_field(name="Technical support site:",
-                         value=f"{BotConfig.BotSite}\n```The bot was developed by MEB from the SM_TECHNOLOGY projects community👽```",
+                         value=f"{BotConfig.BotSite}\n```The ROOM-BOT was developed by MEB from the SM_TECHNOLOGY projects community, enjoy your use👽```",
                          inline=True)
     help_embed.set_footer(text="P.S. To add a marker you must have administrator rights")
     await ctx.send(embed=help_embed)
