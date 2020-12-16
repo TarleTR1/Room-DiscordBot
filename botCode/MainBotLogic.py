@@ -69,7 +69,9 @@ async def help(ctx):
                                title="**Room** - Сlick here to __invite__ to your server😏")
     help_embed.add_field(name="List of all current commands:", inline=True,
                          value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **room/deletemarker** - then enter the channel ID\n┗ **room/info** - next, you will immediately see all the information about all the markers on your server")
-    help_embed.add_field(name="Technical support site:", value=f"{BotConfig.BotSite}", inline=True)
+    help_embed.add_field(name="Technical support site:",
+                         value=f"{BotConfig.BotSite}\n```The bot was developed by MEB from the SM_TECHNOLOGY projects community👽```",
+                         inline=True)
     help_embed.set_footer(text="P.S. To add a marker you must have administrator rights")
     await ctx.send(embed=help_embed)
 
@@ -260,11 +262,11 @@ async def info(ctx):
                                        title="**Room** - Yes, of course, here are __all the channels__ with __markers__😎")
             # listing of all information about the token on the server
             for channel in list(working_with_the_database()[ctx.guild.id].keys()):
+                # collecting channel information
                 info_embed.add_field(name="Marker data:", inline=True,
                                      value=f"```Channel ID: {channel}\nCategory ID: {working_with_the_database()[ctx.guild.id][channel][0]}\nStandart name: {working_with_the_database()[ctx.guild.id][channel][1]}\nSome data: {working_with_the_database()[ctx.guild.id][channel][2]}```")
         # concluding information and sending embed
-        info_embed.set_footer(
-            text="P.S. The last item in the output data for the channel is the active channel IDs created by the bot")
+        info_embed.set_footer(text="P.S. The last element is a list of active room IDs created by the bot")
         await ctx.send(embed=info_embed)
     # catching errors when checking the information on the markers
     except Exception as E:
