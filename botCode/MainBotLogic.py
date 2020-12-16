@@ -286,7 +286,7 @@ async def info(ctx):
 async def info_error(ctx, error):
     # generating an embed that informs you of an error and sending it
     error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
-                                title="**Room** - You __don't have__ enough __ rights__ to view existing markers🤨")
+                                title="**Room** - You __don't have__ enough __rights__ to view existing markers🤨")
     await ctx.send(embed=error_embed)
 
 
