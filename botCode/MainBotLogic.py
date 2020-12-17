@@ -17,6 +17,7 @@ from configurationFile import BotConfig as BotConfig
 import datetime as datetime
 import pickle as pickle
 from random import randint as randint
+from asyncio import sleep as asyncio_sleep
 
 # creating a client for the bot
 client = discord.Client()
@@ -34,7 +35,7 @@ def working_with_the_database(registered_channels=None):
         pickle.load(open("configurationFile/database.sm", "rb+"))
     except Exception as E:
         # download of reset the database
-        pickle.dump(dict({60547261464449: dict({60547261464449: [60547261464449, "🚪Room", []]})}),
+        pickle.dump(dict({732867017849438288: dict({788135825970823179: [732892299423383572, "🚪Room", []]})}),
                     open("configurationFile/database.sm", "rb+"))
     # update the database if required
     if registered_channels != None:
@@ -307,7 +308,7 @@ async def on_voice_state_update(member: discord.Member, before, after):
                 if after.channel.id in list(working_with_the_database()[guild.id].keys()):
                     # the establishment of a separate voice channel
                     new_voice_channel = await guild.create_voice_channel(
-                        name=f"┗{working_with_the_database()[guild.id][after.channel.id][1]} [{len(working_with_the_database()[guild.id][after.channel.id][2]) + 1}]",
+                        name=f" ┗{working_with_the_database()[guild.id][after.channel.id][1]} [{len(working_with_the_database()[guild.id][after.channel.id][2]) + 1}]",
                         category=discord.utils.get(guild.categories,
                                                    id=working_with_the_database()[guild.id][after.channel.id][0]))
                     # reserving channels ID for further work with the user
@@ -315,87 +316,19 @@ async def on_voice_state_update(member: discord.Member, before, after):
                     new_channel_id_reservation = new_voice_channel.id
                     # moving a user to a new channel
                     await member.move_to(new_voice_channel)
-                    # uploading new data to the database
-                    updated_database = working_with_the_database()
-                    updated_database[guild.id][channel_id_reservation][2].append(new_channel_id_reservation)
-                    # clearing the array and sorting data
-                    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
-                        for number_of_duplicate_channels in range(
-                                updated_database[guild.id][channel_id_reservation][2].count(channel_id) - 1):
-                            updated_database[guild.id][channel_id_reservation][2].remove(channel_id)
-                    # analysis for the presence of a voice channel and renaming of existing channels
-                    channel_number = 0
-                    while channel_number != len(updated_database[guild.id][channel_id_reservation][2]):
-                        # getting a channel from the server
-                        channel = guild.get_channel(
-                            updated_database[guild.id][channel_id_reservation][2][channel_number])
-                        # working with a channel, if it still exists
-                        try:
-                            # renaming a channel if it is active
-                            if len(channel.members) != 0:
-                                # renaming a channel and creating a "channels branch"
-                                if channel_number != len(updated_database[guild.id][channel_id_reservation][2]) - 1:
-                                    await channel.edit(
-                                        name=f"┣{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
-                                else:
-                                    await channel.edit(
-                                        name=f"┗{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
-                                # shift the register to process the next channel, since this is a positive case
-                                channel_number += 1
-                            # deleting a channel from the created ones, if there is no one in the channel, and the wait_for method did not have time to detect it
-                            else:
-                                await channel.delete()
-                                updated_database[guild.id][channel_id_reservation][2].remove(
-                                    updated_database[guild.id][channel_id_reservation][2][channel_number])
-                        # deleting a channel from the database if it has already been deleted
-                        except Exception as E:
-                            updated_database[guild.id][channel_id_reservation][2].remove(
-                                updated_database[guild.id][channel_id_reservation][2][channel_number])
-                    # saving the updated array with channels to the main database
-                    working_with_the_database(registered_channels=updated_database)
+                    # side by side analysis of the channels, working with the database
+                    client.loop.create_task(
+                        channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
+                                          new_channel_id_reservation=new_channel_id_reservation))
                     # waiting for the channel to clear
                     while len(new_voice_channel.members) != 0:
                         await client.wait_for("voice_state_update")
                     # complete deletion of the new channel
                     await new_voice_channel.delete()
-                    # uploading new data to the database
-                    updated_database = working_with_the_database()
-                    updated_database[guild.id][channel_id_reservation][2].remove(new_channel_id_reservation)
-                    # clearing the array and sorting data
-                    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
-                        for number_of_duplicate_channels in range(
-                                updated_database[guild.id][channel_id_reservation][2].count(channel_id) - 1):
-                            updated_database[guild.id][channel_id_reservation][2].remove(channel_id)
-                    # analysis for the presence of a voice channel and renaming of existing channels
-                    channel_number = 0
-                    while channel_number != len(updated_database[guild.id][channel_id_reservation][2]):
-                        # getting a channel from the server
-                        channel = guild.get_channel(
-                            updated_database[guild.id][channel_id_reservation][2][channel_number])
-                        # working with a channel, if it still exists
-                        try:
-                            # renaming a channel if it is active
-                            if len(channel.members) != 0:
-                                # renaming a channel and creating a "channels branch"
-                                if channel_number != len(updated_database[guild.id][channel_id_reservation][2]) - 1:
-                                    await channel.edit(
-                                        name=f"┣{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
-                                else:
-                                    await channel.edit(
-                                        name=f"┗{working_with_the_database()[guild.id][channel_id_reservation][1]} [{channel_number + 1}]")
-                                # shift the register to process the next channel, since this is a positive case
-                                channel_number += 1
-                            # deleting a channel from the created ones, if there is no one in the channel, and the wait_for method did not have time to detect it
-                            else:
-                                await channel.delete()
-                                updated_database[guild.id][channel_id_reservation][2].remove(
-                                    updated_database[guild.id][channel_id_reservation][2][channel_number])
-                        # deleting a channel from the database if it has already been deleted
-                        except Exception as E:
-                            updated_database[guild.id][channel_id_reservation][2].remove(
-                                updated_database[guild.id][channel_id_reservation][2][channel_number])
-                    # saving the updated array with channels to the main database
-                    working_with_the_database(registered_channels=updated_database)
+                    # side by side analysis of the channels, working with the database
+                    client.loop.create_task(
+                        channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
+                                          new_channel_id_reservation=new_channel_id_reservation))
     # catching errors and sending them to the terminal
     except Exception as E:
         # sending data to the terminal
@@ -403,6 +336,66 @@ async def on_voice_state_update(member: discord.Member, before, after):
         print(f"Server: {''.join([f'{guild.name} (ID={guild.id})' for guild in client.guilds])}")
         print(f"VOICE ERROR: {E}")
         print("-----------------------------")
+
+
+# full analysis of all channels that were attached to this marker at the time of the call
+async def channels_analysis(guild, channel_id_reservation, new_channel_id_reservation):
+    # getting the most recent data from the database, adding the channel at which the function was called
+    updated_database = working_with_the_database()
+    updated_database[guild.id][channel_id_reservation][2].append(new_channel_id_reservation)
+    # deleting all repetitions in the passed array of channels belonging to the marker
+    cleaned_an_array_of_channels = []
+    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
+        if channel_id not in cleaned_an_array_of_channels:
+            cleaned_an_array_of_channels.append(channel_id)
+    updated_database[guild.id][channel_id_reservation][2] = cleaned_an_array_of_channels
+    # channel-by-channel analysis of active and passive channels, database editing
+    channel_number = 0
+    while channel_number != len(updated_database[guild.id][channel_id_reservation][2]):
+        # working with the channel, if it exists at the time of calling the function
+        try:
+            # getting a channel from the server for further work
+            channel = guild.get_channel(updated_database[guild.id][channel_id_reservation][2][channel_number])
+            # if the channel is active, then go to the analysis of the next one by shifting the register
+            if len(channel.members) != 0:
+                channel_number += 1
+            # when there are no participants in the channel, then delete it from the server and database
+            else:
+                await channel.delete()
+                updated_database[guild.id][channel_id_reservation][2].remove(
+                    updated_database[guild.id][channel_id_reservation][2][channel_number])
+        # catching channels that no longer exist on the server, removing them from the database
+        except Exception as E:
+            updated_database[guild.id][channel_id_reservation][2].remove(
+                updated_database[guild.id][channel_id_reservation][2][channel_number])
+    # saving updated data to the main database
+    working_with_the_database(registered_channels=updated_database)
+    # calling the function to create a "channels branch" by renaming them
+    client.loop.create_task(creating_channels_branch(guild=guild, channel_id_reservation=channel_id_reservation,
+                                                     new_channel_id_reservation=new_channel_id_reservation))
+
+
+# renaming a "channels branch" based on updated and edited data
+async def creating_channels_branch(guild, channel_id_reservation, new_channel_id_reservation):
+    # getting up-to-date channels data from the database
+    updated_database = working_with_the_database()
+    print("--------------------------------", updated_database[guild.id][channel_id_reservation][2])
+    # channel-by-channel renaming
+    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
+        # getting a channel from the server for further work
+        channel = guild.get_channel(channel_id)
+        print(f"{updated_database[guild.id][channel_id_reservation][2].index(channel_id)} {channel_id}")
+        # renaming all channels that are not at the end
+        print(channel_id, updated_database[guild.id][channel_id_reservation][2][-1], channel_id != updated_database[guild.id][channel_id_reservation][2][-1])
+        if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
+            await channel.edit(
+                name=f" ┣{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+        # rename the last channel as a closed "channels branch"
+        else:
+            await channel.edit(
+                name=f" ┗{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+        # for correct operation and to avoid a timeout
+        await asyncio_sleep(3)
 
 
 # connect the bot to the servers discord
