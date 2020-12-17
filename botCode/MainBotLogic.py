@@ -17,7 +17,6 @@ from configurationFile import BotConfig as BotConfig
 import datetime as datetime
 import pickle as pickle
 from random import randint as randint
-from asyncio import sleep as asyncio_sleep
 
 # creating a client for the bot
 client = discord.Client()
@@ -35,7 +34,7 @@ def working_with_the_database(registered_channels=None):
         pickle.load(open("configurationFile/database.sm", "rb+"))
     except Exception as E:
         # download of reset the database
-        pickle.dump(dict({732867017849438288: dict({788135825970823179: [732892299423383572, "🚪Room", []]})}),
+        pickle.dump(dict({60547261464449: dict({60547261464449: [60547261464449, "🚪Room", []]})}),
                     open("configurationFile/database.sm", "rb+"))
     # update the database if required
     if registered_channels != None:
@@ -293,7 +292,7 @@ async def info_error(ctx, error):
     await ctx.send(embed=error_embed)
 
 
-# creating a separate voice channel when joining a specific channel
+# logic for working with a separate voice channel when attaching to a marker
 @client.event
 async def on_voice_state_update(member: discord.Member, before, after):
     # logic for creating/deleting voice channels
@@ -371,31 +370,23 @@ async def channels_analysis(guild, channel_id_reservation, new_channel_id_reserv
     # saving updated data to the main database
     working_with_the_database(registered_channels=updated_database)
     # calling the function to create a "channels branch" by renaming them
-    client.loop.create_task(creating_channels_branch(guild=guild, channel_id_reservation=channel_id_reservation,
-                                                     new_channel_id_reservation=new_channel_id_reservation))
+    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
+        client.loop.create_task(
+            creating_channels_branch(guild=guild, channel_id_reservation=channel_id_reservation, channel_id=channel_id))
 
 
 # renaming a "channels branch" based on updated and edited data
-async def creating_channels_branch(guild, channel_id_reservation, new_channel_id_reservation):
-    # getting up-to-date channels data from the database
+async def creating_channels_branch(guild, channel_id_reservation, channel_id):
+    # getting fresh data from the database for renaming
     updated_database = working_with_the_database()
-    print("--------------------------------", updated_database[guild.id][channel_id_reservation][2])
-    # channel-by-channel renaming
-    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
-        # getting a channel from the server for further work
-        channel = guild.get_channel(channel_id)
-        print(f"{updated_database[guild.id][channel_id_reservation][2].index(channel_id)} {channel_id}")
-        # renaming all channels that are not at the end
-        print(channel_id, updated_database[guild.id][channel_id_reservation][2][-1], channel_id != updated_database[guild.id][channel_id_reservation][2][-1])
-        if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
-            await channel.edit(
-                name=f" ┣{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
-        # rename the last channel as a closed "channels branch"
-        else:
-            await channel.edit(
-                name=f" ┗{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
-        # for correct operation and to avoid a timeout
-        await asyncio_sleep(3)
+    # renaming a channel based on its location on the server
+    channel = guild.get_channel(channel_id)
+    if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
+        await channel.edit(
+            name=f" ┣{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+    else:
+        await channel.edit(
+            name=f" ┗{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
 
 
 # connect the bot to the servers discord
