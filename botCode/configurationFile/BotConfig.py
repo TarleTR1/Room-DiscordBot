@@ -10,6 +10,7 @@
 ########################################
 
 # MASTER DATA FOR THE BOT'S OPERATION
+BotPrefixes = ["room/"]
 BotToken = ""
 BotInvite = "https://discord.com/api/oauth2/authorize?client_id=787298263937974312&permissions=8&scope=bot"
 BotSite = "https://smtechnology.info"
