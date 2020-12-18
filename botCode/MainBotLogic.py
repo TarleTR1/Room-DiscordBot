@@ -14,6 +14,7 @@ import discord as discord
 from discord import Activity, ActivityType
 from discord.ext import commands as commands
 from configurationFile import BotConfig as BotConfig
+from re import sub as StandardizationText
 import datetime as datetime
 import pickle as pickle
 from random import randint as randint
@@ -21,22 +22,22 @@ from random import randint as randint
 # creating a client for the bot
 client = discord.Client()
 # prefix for all ctx-commands of the bot
-client = commands.Bot(command_prefix=["room/"])
+client = commands.Bot(command_prefix=BotConfig.BotPrefixes)
 # to use the internal help command
 client.remove_command("help")
 
 
-# working with a text database
+# working with the database where all the bot markers are stored
 def working_with_the_database(registered_channels=None):
-    # check for the integrity of the database
+    # check for the integrity of the database, try to access the database and get the correct answer
     try:
-        # attempt to open the database
         pickle.load(open("configurationFile/database.sm", "rb+"))
+    # if a database fault is detected, data is reset, and the structure is restored
     except Exception as E:
-        # download of reset the database
-        pickle.dump(dict({60547261464449: dict({60547261464449: [60547261464449, "🚪Room", []]})}),
-                    open("configurationFile/database.sm", "rb+"))
-    # update the database if required
+        pickle.dump(
+            dict({60547261464449: dict({60547261464449: [60547261464449, "{/branch/}🚪Room {/counter/}", []]})}),
+            open("configurationFile/database.sm", "rb+"))
+    # uploading updated data to the database if required
     if registered_channels != None:
         pickle.dump(registered_channels, open("configurationFile/database.sm", "rb+"))
     # returning the current stored database
@@ -58,7 +59,7 @@ async def on_ready():
     print("-----------------------------")
     # setting the bot's status
     await client.change_presence(status=discord.Status.online,
-                                 activity=discord.Game("room/help"))
+                                 activity=discord.Game(f"{BotConfig.BotPrefixes[0]}help"))
 
 
 # sending all necessary information about the bot to help embed
@@ -68,7 +69,7 @@ async def help(ctx):
     help_embed = discord.Embed(colour=discord.Color(0x3b1a11), url=BotConfig.BotInvite,
                                title="**Room** - Сlick here to __invite__ to your server😏")
     help_embed.add_field(name="List of all current commands:", inline=True,
-                         value="┣ **room/addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **room/deletemarker** - then enter the channel ID\n┗ **room/info** - next, you will immediately see all the information about all the markers on your server")
+                         value=f"┣ **{BotConfig.BotPrefixes[0]}addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **{BotConfig.BotPrefixes[0]}deletemarker** - then enter the channel ID\n┗ **{BotConfig.BotPrefixes[0]}info** - next, you will immediately see all the information about all the markers on your server")
     help_embed.add_field(name="Technical support site:",
                          value=f"{BotConfig.BotSite}\n```The ROOM-BOT was developed by MEB from the SM_TECHNOLOGY projects community, enjoy your use👽```",
                          inline=True)
@@ -76,23 +77,23 @@ async def help(ctx):
     await ctx.send(embed=help_embed)
 
 
-# adding a marker to a channel with a category
+# adding a marker on the server using the channel ID and category ID
 @client.command(pass_context=True)
 @commands.has_permissions(administrator=True)
-async def addmarker(ctx, channel_id=None, category_id=None, layout_text=None):
+async def addmarker(ctx, *, args="SM TECHNOLOGY"):
     # sending data to the terminal
     print(datetime.datetime.today())
     print(f"{ctx.guild.name}-->{ctx.author}")
-    print(f"Command name: room/addmarker {list(ctx.args)[1:]}")
-    # logic for adding a marker
+    print(f"Command name: {BotConfig.BotPrefixes[0]}addmarker {list(args.split())}")
+    # logic for adding a marker on the server
     try:
-        # checking for correct spelling
-        if (channel_id != None and len(list(channel_id)) == 18) and (
-                category_id != None and len(list(category_id)) == 18):
-            # correction of the entered data
-            channel_id, category_id = int(channel_id), int(category_id)
-            if layout_text == None:
-                layout_text = "🚪Room"
+        # checking for the number of characters in the passed parameters to add a marker to the server
+        if (len(list(args.split())[0]) == 18) and (len(list(args.split())[1]) == 18):
+            # correction of the entered data for further work with them and adding them to the server
+            channel_id, category_id = int(list(args.split())[0]), int(list(args.split())[1])
+            layout_text = "{/branch/}🚪Room {/counter/}"
+            if len(list(args.split())) > 2:
+                layout_text = " ".join(args.split()[2:])
             # adding a marker if this is the first channel on the server
             if ctx.guild.id not in list(working_with_the_database().keys()):
                 # uploading new data to the database
@@ -132,11 +133,12 @@ async def addmarker(ctx, channel_id=None, category_id=None, layout_text=None):
             # creating and sending embed
             error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
-            error_embed.add_field(name="For example (standard input without additional content):",
-                                  value=f"```room/addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)}```")
-            error_embed.add_field(name="For example (with the introduction of the standard name of a channel):",
-                                  value=f"```room/addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} 🎄Party```")
-            error_embed.set_footer(text="P.S. Enter the standard channel name without spaces")
+            error_embed.add_field(name="Example of a simple marker addition:", inline=True,
+                                  value=f"```{BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)}```")
+            error_embed.add_field(name="Additional parameters for room names:", inline=True,
+                                  value="┣ **{/branch/}** - to create a visual _channels branch_\n┗ **{/counter/}** - to count all created rooms from the marker")
+            error_embed.set_footer(
+                text=f"P.S. You can also change the standard rooms name and special characters, for example: {BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} " + "{/branch/}🎄Party {〖/counter/〗}")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
             print(f"ERROR: Incorrect data entry")
@@ -171,22 +173,24 @@ async def deletemarker(ctx, channel_id=None):
     # sending data to the terminal
     print(datetime.datetime.today())
     print(f"{ctx.guild.name}-->{ctx.author}")
-    print(f"Command name: room/deletemarker {list(ctx.args)[1:]}")
-    # logic for delete a marker
+    print(f"Command name: {BotConfig.BotPrefixes[0]}deletemarker {list(ctx.args)[1:]}")
+    # logic for deleting a marker from the server
     try:
-        # checking for correct spelling
+        # checking for the number of characters in the passed parameters to delete a marker from the server
         if channel_id != None and len(list(channel_id)) == 18:
-            # correction of the entered data
+            # correction of the entered data for further work with them
             channel_id = int(channel_id)
-            # the presence of markers
+            # when the server is not registered yet
             if ctx.guild.id not in list(working_with_the_database().keys()):
                 # creating and forming an embed structure
                 delete_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
                                              title="**Room** - There is __nothing to delete__ on this server yet😄")
+            # when the server is registered but the specified marker does not exist
             elif channel_id not in list(working_with_the_database()[ctx.guild.id].keys()):
                 # creating and forming an embed structure
                 delete_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
                                              title="**Room** - In any case, this channel __wasn't in__ the database🧐")
+            # when everything is fine and you can delete the marker
             else:
                 # uploading new data to the database
                 updated_database = working_with_the_database()
@@ -199,7 +203,7 @@ async def deletemarker(ctx, channel_id=None):
             delete_embed.add_field(name="Channel ID:", value=f"{channel_id}", inline=True)
             delete_embed.add_field(name="Delete status:", value="The channel is not in the database", inline=True)
             delete_embed.add_field(name="Recommended commands:", inline=True,
-                                   value="┣ **room/addmarker**\n┗ **room/info**")
+                                   value=f"┣ **{BotConfig.BotPrefixes[0]}addmarker**\n┗ **{BotConfig.BotPrefixes[0]}info**")
             await ctx.send(embed=delete_embed)
         # warnings about incorrect data
         else:
@@ -207,9 +211,10 @@ async def deletemarker(ctx, channel_id=None):
             error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
             error_embed.add_field(name="Example of the correct spelling of this command:",
-                                  value=f"```room/deletemarker {randint(10 ** (18 - 1), 10 ** 18 - 1)}```", inline=True)
+                                  value=f"```{BotConfig.BotPrefixes[0]}deletemarker {randint(10 ** (18 - 1), 10 ** 18 - 1)}```",
+                                  inline=True)
             error_embed.add_field(name="Recommended commands:", inline=True,
-                                  value="┣ **room/help**\n┗ **room/info**")
+                                  value=f"┣ **{BotConfig.BotPrefixes[0]}help**\n┗ **{BotConfig.BotPrefixes[0]}info**")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
             print(f"ERROR: Incorrect data entry")
@@ -244,18 +249,20 @@ async def info(ctx):
     # sending data to the terminal
     print(datetime.datetime.today())
     print(f"{ctx.guild.name}-->{ctx.author}")
-    print(f"Command name: room/info {list(ctx.args)[1:]}")
+    print(f"Command name: {BotConfig.BotPrefixes[0]}info {list(ctx.args)[1:]}")
     # the logic for generating the output information
     try:
-        # comparison for the presence of markers on the server
+        # when the server is not yet in the database
         if ctx.guild.id not in list(working_with_the_database().keys()):
             # creating and forming an embed structure
             info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
                                        title="**Room** - Wow, it looks like you __haven't put__ any markers yet😀")
+        # if the server is registered, but there are no markers on it
         elif list(working_with_the_database()[ctx.guild.id].keys()) == []:
             # creating and forming an embed structure
             info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
                                        title="**Room** - Wow, looks like __you deleted__ all your markers😮")
+        # when everything is fine and you can output data about all markers on the server
         else:
             # creating and forming an embed structure
             info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
@@ -264,7 +271,7 @@ async def info(ctx):
             for channel in list(working_with_the_database()[ctx.guild.id].keys()):
                 # collecting channel information
                 info_embed.add_field(name="Marker data:", inline=True,
-                                     value=f"```Channel ID: {channel}\nCategory ID: {working_with_the_database()[ctx.guild.id][channel][0]}\nStandart name: {working_with_the_database()[ctx.guild.id][channel][1]}\nSome data: {working_with_the_database()[ctx.guild.id][channel][2]}```")
+                                     value=f"```Channel ID: {channel}\nCategory ID: {working_with_the_database()[ctx.guild.id][channel][0]}\nRooms name: {working_with_the_database()[ctx.guild.id][channel][1]}\nSome data: {working_with_the_database()[ctx.guild.id][channel][2]}```")
         # concluding information and sending embed
         info_embed.set_footer(text="P.S. The last element is a list of active room IDs created by the bot")
         await ctx.send(embed=info_embed)
@@ -292,22 +299,22 @@ async def info_error(ctx, error):
     await ctx.send(embed=error_embed)
 
 
-# logic for working with a separate voice channel when attaching to a marker
+# working with voice channels, logic for analyzing the presence of participants in the marker and channel
 @client.event
 async def on_voice_state_update(member: discord.Member, before, after):
-    # logic for creating/deleting voice channels
+    # working with member, checking for its presence in the marker
     try:
-        # checking for connection to a specific channel
+        # checking for connection to a specific channel on the server
         if after.channel is not None:
             for guild in client.guilds:
                 # checking for the presence of a server in the database
                 if guild.id not in list(working_with_the_database().keys()):
                     return
-                # checking for a marker in the database
+                # checking the correspondence between the ID of the channel that the participant has connected to and the IDs of all existing and registered server markers
                 if after.channel.id in list(working_with_the_database()[guild.id].keys()):
-                    # the establishment of a separate voice channel
+                    # creating a new room to move the participant to in the future
                     new_voice_channel = await guild.create_voice_channel(
-                        name=f" ┗{working_with_the_database()[guild.id][after.channel.id][1]} [{len(working_with_the_database()[guild.id][after.channel.id][2]) + 1}]",
+                        name=f"🚪Server analysis for {member.display_name}...",
                         category=discord.utils.get(guild.categories,
                                                    id=working_with_the_database()[guild.id][after.channel.id][0]))
                     # reserving channels ID for further work with the user
@@ -319,10 +326,10 @@ async def on_voice_state_update(member: discord.Member, before, after):
                     client.loop.create_task(
                         channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
                                           new_channel_id_reservation=new_channel_id_reservation))
-                    # waiting for the channel to clear
+                    # loop to wait for the created room to be completely cleared of users
                     while len(new_voice_channel.members) != 0:
                         await client.wait_for("voice_state_update")
-                    # complete deletion of the new channel
+                    # complete removal of an empty channel from the server
                     await new_voice_channel.delete()
                     # side by side analysis of the channels, working with the database
                     client.loop.create_task(
@@ -379,14 +386,37 @@ async def channels_analysis(guild, channel_id_reservation, new_channel_id_reserv
 async def creating_channels_branch(guild, channel_id_reservation, channel_id):
     # getting fresh data from the database for renaming
     updated_database = working_with_the_database()
-    # renaming a channel based on its location on the server
+    # getting a channel from the server for further work with it
     channel = guild.get_channel(channel_id)
-    if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
-        await channel.edit(
-            name=f" ┣{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
-    else:
-        await channel.edit(
-            name=f" ┗{updated_database[guild.id][channel_id_reservation][1]} [{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+    # creating a full-fledged channel name from data
+    layout_text = []
+    for indicator in str("{}" + updated_database[guild.id][channel_id_reservation][1]).split("{"):
+        # when you need to create a channel branch
+        if len(indicator.split("}")[0].split("/branch/")) >= 2:
+            # analysis of additional characters if they are required
+            if (indicator.split("}")[0].split("/branch/")[0] != "") and (
+                    indicator.split("}")[0].split("/branch/")[1] != ""):
+                channels_branch_symbols = indicator.split("}")[0].split("/branch/")
+            else:
+                channels_branch_symbols = ["┣", "┗"]
+            # depending on where the channel is located on the server, continue the channels branch or close it
+            if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
+                layout_text.append(channels_branch_symbols[0])
+            else:
+                layout_text.append(channels_branch_symbols[1])
+        # when you want to print the channel number from the created by marker
+        elif len(indicator.split("}")[0].split("/counter/")) >= 2:
+            if (indicator.split("}")[0].split("/counter/")[0] != "") and (
+                    indicator.split("}")[0].split("/counter/")[1] != ""):
+                layout_text.append(str(indicator.split("}")[0].split("/counter/")[0]) + str(
+                    updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1) + str(
+                    indicator.split("}")[0].split("/counter/")[1]))
+            else:
+                layout_text.append(f"[{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+        # add the rest of the text without instruction pointer
+        layout_text.append("".join(indicator.split("}")[1:]))
+    # rename the channel with the name that passed the full analysis
+    await channel.edit(name="".join(layout_text))
 
 
 # connect the bot to the servers discord
