@@ -384,39 +384,45 @@ async def channels_analysis(guild, channel_id_reservation, new_channel_id_reserv
 
 # renaming a "channels branch" based on updated and edited data
 async def creating_channels_branch(guild, channel_id_reservation, channel_id):
-    # getting fresh data from the database for renaming
-    updated_database = working_with_the_database()
-    # getting a channel from the server for further work with it
-    channel = guild.get_channel(channel_id)
-    # creating a full-fledged channel name from data
-    layout_text = []
-    for indicator in str("{}" + updated_database[guild.id][channel_id_reservation][1]).split("{"):
-        # when you need to create a channel branch
-        if len(indicator.split("}")[0].split("/branch/")) >= 2:
-            # analysis of additional characters if they are required
-            if (indicator.split("}")[0].split("/branch/")[0] != "") and (
-                    indicator.split("}")[0].split("/branch/")[1] != ""):
-                channels_branch_symbols = indicator.split("}")[0].split("/branch/")
-            else:
-                channels_branch_symbols = ["┣", "┗"]
-            # depending on where the channel is located on the server, continue the channels branch or close it
-            if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
-                layout_text.append(channels_branch_symbols[0])
-            else:
-                layout_text.append(channels_branch_symbols[1])
-        # when you want to print the channel number from the created by marker
-        elif len(indicator.split("}")[0].split("/counter/")) >= 2:
-            if (indicator.split("}")[0].split("/counter/")[0] != "") and (
-                    indicator.split("}")[0].split("/counter/")[1] != ""):
-                layout_text.append(str(indicator.split("}")[0].split("/counter/")[0]) + str(
-                    updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1) + str(
-                    indicator.split("}")[0].split("/counter/")[1]))
-            else:
-                layout_text.append(f"[{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
-        # add the rest of the text without instruction pointer
-        layout_text.append("".join(indicator.split("}")[1:]))
-    # rename the channel with the name that passed the full analysis
-    await channel.edit(name="".join(layout_text))
+    # renaming a channel if all data is still up to date
+    try:
+        # getting fresh data from the database for renaming
+        updated_database = working_with_the_database()
+        # getting a channel from the server for further work with it
+        channel = guild.get_channel(channel_id)
+        # creating a full-fledged channel name from data
+        layout_text = []
+        for indicator in str("{}" + updated_database[guild.id][channel_id_reservation][1]).split("{"):
+            # when you need to create a channel branch
+            if len(indicator.split("}")[0].split("/branch/")) >= 2:
+                # analysis of additional characters if they are required
+                if (indicator.split("}")[0].split("/branch/")[0] != "") and (
+                        indicator.split("}")[0].split("/branch/")[1] != ""):
+                    channels_branch_symbols = indicator.split("}")[0].split("/branch/")
+                else:
+                    channels_branch_symbols = ["┣", "┗"]
+                # depending on where the channel is located on the server, continue the channels branch or close it
+                if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
+                    layout_text.append(channels_branch_symbols[0])
+                else:
+                    layout_text.append(channels_branch_symbols[1])
+            # when you want to print the channel number from the created by marker
+            elif len(indicator.split("}")[0].split("/counter/")) >= 2:
+                if (indicator.split("}")[0].split("/counter/")[0] != "") and (
+                        indicator.split("}")[0].split("/counter/")[1] != ""):
+                    layout_text.append(str(indicator.split("}")[0].split("/counter/")[0]) + str(
+                        updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1) + str(
+                        indicator.split("}")[0].split("/counter/")[1]))
+                else:
+                    layout_text.append(
+                        f"[{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+            # add the rest of the text without instruction pointer
+            layout_text.append("".join(indicator.split("}")[1:]))
+        # rename the channel with the name that passed the full analysis
+        await channel.edit(name="".join(layout_text))
+    # after catching the moment when a channel has hit the discord timeout for updates, just skip that channel until it is updated again
+    except Exception as E:
+        pass
 
 
 # connect the bot to the servers discord
