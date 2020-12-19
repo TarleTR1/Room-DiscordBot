@@ -35,7 +35,7 @@ def working_with_the_database(registered_channels=None):
     # if a database fault is detected, data is reset, and the structure is restored
     except Exception as E:
         pickle.dump(
-            dict({60547261464449: dict({60547261464449: [60547261464449, "{/branch/}🚪Room {/counter/}", []]})}),
+            dict({60547261464449: dict({60547261464449: [60547261464449, "{/branch/}🚪Room {/counter/}", dict()]})}),
             open("configurationFile/database.sm", "rb+"))
     # uploading updated data to the database if required
     if registered_channels != None:
@@ -91,14 +91,14 @@ async def addmarker(ctx, *, args="SM TECHNOLOGY"):
         if (len(list(args.split())[0]) == 18) and (len(list(args.split())[1]) == 18):
             # correction of the entered data for further work with them and adding them to the server
             channel_id, category_id = int(list(args.split())[0]), int(list(args.split())[1])
-            layout_text = "{/branch/}🚪Room {/counter/}"
+            layout_text = "🚪Room{〚/author/〛}"
             if len(list(args.split())) > 2:
                 layout_text = " ".join(args.split()[2:])
             # adding a marker if this is the first channel on the server
             if ctx.guild.id not in list(working_with_the_database().keys()):
                 # uploading new data to the database
                 updated_database = working_with_the_database()
-                updated_database.update(dict({ctx.guild.id: dict({channel_id: [category_id, layout_text, []]})}))
+                updated_database.update(dict({ctx.guild.id: dict({channel_id: [category_id, layout_text, dict()]})}))
                 working_with_the_database(registered_channels=updated_database)
                 # creating and forming an embed structure
                 add_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
@@ -107,7 +107,8 @@ async def addmarker(ctx, *, args="SM TECHNOLOGY"):
             elif channel_id in list(working_with_the_database()[ctx.guild.id].keys()):
                 # uploading new data to the database
                 updated_database = working_with_the_database()
-                updated_database[ctx.guild.id][channel_id] = [category_id, layout_text, []]
+                updated_database[ctx.guild.id][channel_id] = [category_id, layout_text,
+                                                              updated_database[ctx.guild.id][channel_id][2]]
                 working_with_the_database(registered_channels=updated_database)
                 # creating and forming an embed structure
                 add_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
@@ -116,7 +117,7 @@ async def addmarker(ctx, *, args="SM TECHNOLOGY"):
             elif list(working_with_the_database().keys()) != []:
                 # uploading new data to the database
                 updated_database = working_with_the_database()
-                updated_database[ctx.guild.id].update(dict({channel_id: [category_id, layout_text, []]}))
+                updated_database[ctx.guild.id].update(dict({channel_id: [category_id, layout_text, dict()]}))
                 working_with_the_database(registered_channels=updated_database)
                 # creating and forming an embed structure
                 add_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
@@ -135,7 +136,9 @@ async def addmarker(ctx, *, args="SM TECHNOLOGY"):
                                         title="**Room** - Oops, I think you're __typing__ something __wrong__😜")
             error_embed.add_field(name="Example of a simple marker addition:", inline=True,
                                   value=f"```{BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)}```")
-            error_embed.add_field(name="Additional parameters for room names:", inline=True,
+            error_embed.add_field(name="Additional parameter for room names:", inline=True,
+                                  value="┗ **{/author/}** - parameter for displaying the _nickname_ of the creator of this room in the channel name")
+            error_embed.add_field(name="Little updated parameters (due to discord timeout):", inline=True,
                                   value="┣ **{/branch/}** - to create a visual _channels branch_\n┗ **{/counter/}** - to count all created rooms from the marker")
             error_embed.set_footer(
                 text=f"P.S. You can also change the standard rooms name and special characters, for example: {BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} " + "{/branch/}🎄Party {〖/counter/〗}")
@@ -267,11 +270,13 @@ async def info(ctx):
             # creating and forming an embed structure
             info_embed = discord.Embed(colour=discord.Color(0x00FF00), url=BotConfig.BotInvite,
                                        title="**Room** - Yes, of course, here are __all the channels__ with __markers__😎")
-            # listing of all information about the token on the server
+            # getting the most recent data from the database
+            updated_database = working_with_the_database()
+            # listing of all information about the markers on the server
             for channel in list(working_with_the_database()[ctx.guild.id].keys()):
                 # collecting channel information
                 info_embed.add_field(name="Marker data:", inline=True,
-                                     value=f"```Channel ID: {channel}\nCategory ID: {working_with_the_database()[ctx.guild.id][channel][0]}\nRooms name: {working_with_the_database()[ctx.guild.id][channel][1]}\nSome data: {working_with_the_database()[ctx.guild.id][channel][2]}```")
+                                     value=f"```Channel ID: {channel}\nCategory ID: {updated_database[ctx.guild.id][channel][0]}\nRooms name: {updated_database[ctx.guild.id][channel][1]}\nSome data: {list(updated_database[ctx.guild.id][channel][2].keys())}```")
         # concluding information and sending embed
         info_embed.set_footer(text="P.S. The last element is a list of active room IDs created by the bot")
         await ctx.send(embed=info_embed)
@@ -325,7 +330,8 @@ async def on_voice_state_update(member: discord.Member, before, after):
                     # side by side analysis of the channels, working with the database
                     client.loop.create_task(
                         channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
-                                          new_channel_id_reservation=new_channel_id_reservation))
+                                          new_channel_id_reservation=new_channel_id_reservation,
+                                          room_author=member.display_name))
                     # loop to wait for the created room to be completely cleared of users
                     while len(new_voice_channel.members) != 0:
                         await client.wait_for("voice_state_update")
@@ -334,7 +340,8 @@ async def on_voice_state_update(member: discord.Member, before, after):
                     # side by side analysis of the channels, working with the database
                     client.loop.create_task(
                         channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
-                                          new_channel_id_reservation=new_channel_id_reservation))
+                                          new_channel_id_reservation=new_channel_id_reservation,
+                                          room_author=member.display_name))
     # catching errors and sending them to the terminal
     except Exception as E:
         # sending data to the terminal
@@ -345,39 +352,42 @@ async def on_voice_state_update(member: discord.Member, before, after):
 
 
 # full analysis of all channels that were attached to this marker at the time of the call
-async def channels_analysis(guild, channel_id_reservation, new_channel_id_reservation):
+async def channels_analysis(guild, channel_id_reservation, new_channel_id_reservation, room_author):
     # getting the most recent data from the database, adding the channel at which the function was called
     updated_database = working_with_the_database()
-    updated_database[guild.id][channel_id_reservation][2].append(new_channel_id_reservation)
+    updated_database[guild.id][channel_id_reservation][2].update(
+        {new_channel_id_reservation: [room_author, datetime.datetime.now(), True]})
     # deleting all repetitions in the passed array of channels belonging to the marker
-    cleaned_an_array_of_channels = []
-    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
-        if channel_id not in cleaned_an_array_of_channels:
-            cleaned_an_array_of_channels.append(channel_id)
-    updated_database[guild.id][channel_id_reservation][2] = cleaned_an_array_of_channels
+    cleaned_an_dict_of_channels = dict()
+    for channel_id in updated_database[guild.id][channel_id_reservation][2].keys():
+        if channel_id not in cleaned_an_dict_of_channels.keys():
+            cleaned_an_dict_of_channels.update(
+                {channel_id: updated_database[guild.id][channel_id_reservation][2][channel_id]})
+    updated_database[guild.id][channel_id_reservation][2] = cleaned_an_dict_of_channels
     # channel-by-channel analysis of active and passive channels, database editing
     channel_number = 0
-    while channel_number != len(updated_database[guild.id][channel_id_reservation][2]):
+    while channel_number != len(updated_database[guild.id][channel_id_reservation][2].keys()):
         # working with the channel, if it exists at the time of calling the function
         try:
             # getting a channel from the server for further work
-            channel = guild.get_channel(updated_database[guild.id][channel_id_reservation][2][channel_number])
+            channel = guild.get_channel(
+                list(updated_database[guild.id][channel_id_reservation][2].keys())[channel_number])
             # if the channel is active, then go to the analysis of the next one by shifting the register
             if len(channel.members) != 0:
                 channel_number += 1
             # when there are no participants in the channel, then delete it from the server and database
             else:
                 await channel.delete()
-                updated_database[guild.id][channel_id_reservation][2].remove(
-                    updated_database[guild.id][channel_id_reservation][2][channel_number])
+                updated_database[guild.id][channel_id_reservation][2].pop(
+                    list(updated_database[guild.id][channel_id_reservation][2].keys())[channel_number])
         # catching channels that no longer exist on the server, removing them from the database
         except Exception as E:
-            updated_database[guild.id][channel_id_reservation][2].remove(
-                updated_database[guild.id][channel_id_reservation][2][channel_number])
+            updated_database[guild.id][channel_id_reservation][2].pop(
+                list(updated_database[guild.id][channel_id_reservation][2].keys())[channel_number])
     # saving updated data to the main database
     working_with_the_database(registered_channels=updated_database)
     # calling the function to create a "channels branch" by renaming them
-    for channel_id in updated_database[guild.id][channel_id_reservation][2]:
+    for channel_id in updated_database[guild.id][channel_id_reservation][2].keys():
         client.loop.create_task(
             creating_channels_branch(guild=guild, channel_id_reservation=channel_id_reservation, channel_id=channel_id))
 
@@ -388,6 +398,11 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
     try:
         # getting fresh data from the database for renaming
         updated_database = working_with_the_database()
+        # checking to prevent the discord from being timed out by change requests
+        if divmod((updated_database[guild.id][channel_id_reservation][2][channel_id][
+                       1] - datetime.datetime.now()).total_seconds(), 60)[1] <= 5 * 60 and \
+                updated_database[guild.id][channel_id_reservation][2][channel_id][2] != True:
+            return
         # getting a channel from the server for further work with it
         channel = guild.get_channel(channel_id)
         # creating a full-fledged channel name from data
@@ -402,7 +417,7 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
                 else:
                     channels_branch_symbols = ["┣", "┗"]
                 # depending on where the channel is located on the server, continue the channels branch or close it
-                if channel_id != updated_database[guild.id][channel_id_reservation][2][-1]:
+                if channel_id != list(updated_database[guild.id][channel_id_reservation][2].keys())[-1]:
                     layout_text.append(channels_branch_symbols[0])
                 else:
                     layout_text.append(channels_branch_symbols[1])
@@ -411,16 +426,31 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
                 if (indicator.split("}")[0].split("/counter/")[0] != "") and (
                         indicator.split("}")[0].split("/counter/")[1] != ""):
                     layout_text.append(str(indicator.split("}")[0].split("/counter/")[0]) + str(
-                        updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1) + str(
+                        list(updated_database[guild.id][channel_id_reservation][2].keys()).index(channel_id) + 1) + str(
                         indicator.split("}")[0].split("/counter/")[1]))
                 else:
                     layout_text.append(
-                        f"[{updated_database[guild.id][channel_id_reservation][2].index(channel_id) + 1}]")
+                        f"[{list(updated_database[guild.id][channel_id_reservation][2].keys()).index(channel_id) + 1}]")
+            # add the name of the room creator to the channel name
+            elif len(indicator.split("}")[0].split("/author/")) >= 2:
+                if (indicator.split("}")[0].split("/author/")[0] != "") and (
+                        indicator.split("}")[0].split("/author/")[1] != ""):
+                    layout_text.append(str(indicator.split("}")[0].split("/author/")[0]) + str(
+                        updated_database[guild.id][channel_id_reservation][2][channel_id][0]) + str(
+                        indicator.split("}")[0].split("/author/")[1]))
+                else:
+                    layout_text.append(str(updated_database[guild.id][channel_id_reservation][2][channel_id][0]))
             # add the rest of the text without instruction pointer
             layout_text.append("".join(indicator.split("}")[1:]))
-        # rename the channel with the name that passed the full analysis
-        await channel.edit(name="".join(layout_text))
-    # after catching the moment when a channel has hit the discord timeout for updates, just skip that channel until it is updated again
+        # comparison for matches of the old and new names
+        if channel.name != "".join(layout_text):
+            # update the time of the last timeout and omit the check box for rooms with a timeout protection exception
+            updated_database[guild.id][channel_id_reservation][2][channel_id] = [
+                updated_database[guild.id][channel_id_reservation][2][channel_id][0], datetime.datetime.now(), False]
+            working_with_the_database(registered_channels=updated_database)
+            # rename the channel with the name that passed the full analysis
+            await channel.edit(name="".join(layout_text))
+    # catching cases where irrelevant data was transmitted
     except Exception as E:
         pass
 
