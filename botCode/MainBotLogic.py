@@ -26,6 +26,9 @@ client = commands.Bot(command_prefix=BotConfig.BotPrefixes)
 # to use the internal help command
 client.remove_command("help")
 
+# timeout to change the settings of the room
+room_update_timeout = 5
+
 
 # working with the database where all the bot markers are stored
 def working_with_the_database(registered_channels=None):
@@ -322,6 +325,9 @@ async def on_voice_state_update(member: discord.Member, before, after):
                         name=f"🚪Server analysis for {member.display_name}...",
                         category=discord.utils.get(guild.categories,
                                                    id=working_with_the_database()[guild.id][after.channel.id][0]))
+                    # configuring the rights of the creator who owns the channel
+                    await new_voice_channel.set_permissions(member, connect=True, mute_members=True, move_members=True,
+                                                            manage_channels=True)
                     # reserving channels ID for further work with the user
                     channel_id_reservation = after.channel.id
                     new_channel_id_reservation = new_voice_channel.id
@@ -357,12 +363,13 @@ async def channels_analysis(guild, channel_id_reservation, new_channel_id_reserv
     updated_database = working_with_the_database()
     updated_database[guild.id][channel_id_reservation][2].update(
         dict({new_channel_id_reservation: [room_author, datetime.datetime.now(), True]}))
-    # deleting all repetitions in the passed array of channels belonging to the marker
+    # delete all repetitions in the passed channel dictionary that belong to the marker
     cleaned_an_dict_of_channels = dict()
     for channel_id in updated_database[guild.id][channel_id_reservation][2].keys():
         if channel_id not in cleaned_an_dict_of_channels.keys():
             cleaned_an_dict_of_channels.update(
                 dict({channel_id: updated_database[guild.id][channel_id_reservation][2][channel_id]}))
+    # assigning new data to a working copy of the database
     updated_database[guild.id][channel_id_reservation][2] = cleaned_an_dict_of_channels
     # channel-by-channel analysis of active and passive channels, database editing
     channel_number = 0
@@ -400,7 +407,7 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
         updated_database = working_with_the_database()
         # checking to prevent the discord from being timed out by change requests
         if divmod((updated_database[guild.id][channel_id_reservation][2][channel_id][
-                       1] - datetime.datetime.now()).total_seconds(), 60)[1] >= 5 * 60 and \
+                       1] - datetime.datetime.now()).total_seconds(), 60)[1] >= room_update_timeout * 60 and \
                 updated_database[guild.id][channel_id_reservation][2][channel_id][2] != True:
             return
         # getting a channel from the server for further work with it
