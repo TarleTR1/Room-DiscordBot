@@ -356,13 +356,13 @@ async def channels_analysis(guild, channel_id_reservation, new_channel_id_reserv
     # getting the most recent data from the database, adding the channel at which the function was called
     updated_database = working_with_the_database()
     updated_database[guild.id][channel_id_reservation][2].update(
-        {new_channel_id_reservation: [room_author, datetime.datetime.now(), True]})
+        dict({new_channel_id_reservation: [room_author, datetime.datetime.now(), True]}))
     # deleting all repetitions in the passed array of channels belonging to the marker
     cleaned_an_dict_of_channels = dict()
     for channel_id in updated_database[guild.id][channel_id_reservation][2].keys():
         if channel_id not in cleaned_an_dict_of_channels.keys():
             cleaned_an_dict_of_channels.update(
-                {channel_id: updated_database[guild.id][channel_id_reservation][2][channel_id]})
+                dict({channel_id: updated_database[guild.id][channel_id_reservation][2][channel_id]}))
     updated_database[guild.id][channel_id_reservation][2] = cleaned_an_dict_of_channels
     # channel-by-channel analysis of active and passive channels, database editing
     channel_number = 0
@@ -400,7 +400,7 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
         updated_database = working_with_the_database()
         # checking to prevent the discord from being timed out by change requests
         if divmod((updated_database[guild.id][channel_id_reservation][2][channel_id][
-                       1] - datetime.datetime.now()).total_seconds(), 60)[1] <= 5 * 60 and \
+                       1] - datetime.datetime.now()).total_seconds(), 60)[1] >= 5 * 60 and \
                 updated_database[guild.id][channel_id_reservation][2][channel_id][2] != True:
             return
         # getting a channel from the server for further work with it
