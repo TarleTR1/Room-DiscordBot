@@ -335,9 +335,9 @@ async def on_voice_state_update(member: discord.Member, before, after):
                     await member.move_to(new_voice_channel)
                     # side by side analysis of the channels, working with the database
                     client.loop.create_task(
-                        channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
-                                          new_channel_id_reservation=new_channel_id_reservation,
-                                          room_author=member.display_name))
+                        server_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
+                                        new_channel_id_reservation=new_channel_id_reservation,
+                                        room_author=member.display_name))
                     # loop to wait for the created room to be completely cleared of users
                     while len(new_voice_channel.members) != 0:
                         await client.wait_for("voice_state_update")
@@ -345,9 +345,9 @@ async def on_voice_state_update(member: discord.Member, before, after):
                     await new_voice_channel.delete()
                     # side by side analysis of the channels, working with the database
                     client.loop.create_task(
-                        channels_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
-                                          new_channel_id_reservation=new_channel_id_reservation,
-                                          room_author=member.display_name))
+                        server_analysis(guild=guild, channel_id_reservation=channel_id_reservation,
+                                        new_channel_id_reservation=new_channel_id_reservation,
+                                        room_author=member.display_name))
     # catching errors and sending them to the terminal
     except Exception as E:
         # sending data to the terminal
@@ -358,7 +358,7 @@ async def on_voice_state_update(member: discord.Member, before, after):
 
 
 # full analysis of all channels that were attached to this marker at the time of the call
-async def channels_analysis(guild, channel_id_reservation, new_channel_id_reservation, room_author):
+async def server_analysis(guild, channel_id_reservation, new_channel_id_reservation, room_author):
     # getting the most recent data from the database, adding a new room when calling the function if required
     updated_database = working_with_the_database()
     if new_channel_id_reservation not in updated_database[guild.id][channel_id_reservation][2].keys():
