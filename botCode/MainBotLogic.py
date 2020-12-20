@@ -359,18 +359,11 @@ async def on_voice_state_update(member: discord.Member, before, after):
 
 # full analysis of all channels that were attached to this marker at the time of the call
 async def channels_analysis(guild, channel_id_reservation, new_channel_id_reservation, room_author):
-    # getting the most recent data from the database, adding the channel at which the function was called
+    # getting the most recent data from the database, adding a new room when calling the function if required
     updated_database = working_with_the_database()
-    updated_database[guild.id][channel_id_reservation][2].update(
-        dict({new_channel_id_reservation: [room_author, datetime.datetime.now(), True]}))
-    # delete all repetitions in the passed channel dictionary that belong to the marker
-    cleaned_an_dict_of_channels = dict()
-    for channel_id in updated_database[guild.id][channel_id_reservation][2].keys():
-        if channel_id not in cleaned_an_dict_of_channels.keys():
-            cleaned_an_dict_of_channels.update(
-                dict({channel_id: updated_database[guild.id][channel_id_reservation][2][channel_id]}))
-    # assigning new data to a working copy of the database
-    updated_database[guild.id][channel_id_reservation][2] = cleaned_an_dict_of_channels
+    if new_channel_id_reservation not in updated_database[guild.id][channel_id_reservation][2].keys():
+        updated_database[guild.id][channel_id_reservation][2].update(
+            dict({new_channel_id_reservation: [room_author, datetime.datetime.now(), True]}))
     # channel-by-channel analysis of active and passive channels, database editing
     channel_number = 0
     while channel_number != len(updated_database[guild.id][channel_id_reservation][2].keys()):
