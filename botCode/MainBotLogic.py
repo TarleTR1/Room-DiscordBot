@@ -461,7 +461,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         # generating an embed that informs you of an error and sending it
         error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
-                                    title="**Room** - Someone __doesn't know__ the __commands__, enter **room/help**🤨")
+                                    title="**Room** - Someone __doesn't know__ the __commands__, enter **room/help**🤔")
         await ctx.send(embed=error_embed)
 
 
