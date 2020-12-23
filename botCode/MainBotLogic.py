@@ -11,7 +11,6 @@
 
 # import main modules
 import discord as discord
-from discord import Activity, ActivityType
 from discord.ext import commands as commands
 from configurationFile import BotConfig as BotConfig
 from re import sub as StandardizationText
@@ -458,6 +457,7 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
 # sending a warning about an incorrectly entered command if the correct one was not found
 @client.event
 async def on_command_error(ctx, error):
+    # checking whether the requested command is non-existent
     if isinstance(error, commands.CommandNotFound):
         # generating an embed that informs you of an error and sending it
         error_embed = discord.Embed(colour=discord.Color(0xFF0000), url=BotConfig.BotInvite,
