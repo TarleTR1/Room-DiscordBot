@@ -76,7 +76,7 @@ async def help(ctx):
     help_embed.add_field(inline=True, name="Technical support site:",
                          value=f"{BotConfig.BotSite}\n```The ROOM-BOT was developed by MEB from the SM_TECHNOLOGY projects community, enjoy your use👽```")
     help_embed.set_footer(
-        text=f"P.S. {['To add a marker, you must have administrator rights', 'To delete a marker, you must have administrator rights', 'To view information about markers, you must have administrator rights', 'To interact with the bot, you must have administrator rights', 'Sometimes dynamic room names may not change immediately, this is due to the Discord timeout (I hope that the frequency of sending requests will increase soon)', 'Thank you for inviting the bot to your server, I am very pleased'][randint(0, 5)]}")
+        text=f"P.S. {['To add a marker, you must have administrator rights', 'To delete a marker, you must have administrator rights', 'To view information about markers, you must have administrator rights', 'To interact with the bot, you must have administrator rights', 'Sometimes dynamic room names may not change immediately, this is due to the Discord timeout (I hope that the allowed frequency of sending requests will increase soon)', 'Thank you for inviting the bot to your server, I am very pleased'][randint(0, 5)]}")
     await ctx.send(embed=help_embed)
 
 
