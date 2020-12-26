@@ -432,7 +432,7 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
             # when you need to create a rainbow of rooms
             elif len(indicator.split("}")[0].split("/rainbow/")) >= 2:
                 # analysis for editing the color palette
-                emoji_collection = "🔴🟠🟡🟢🔵🟣"
+                emoji_collection = "💖🧡💛💚💙💜"
                 if len("".join(indicator.split("}")[0].split("/rainbow/"))) != 0:
                     emoji_collection = "".join(indicator.split("}")[0].split("/rainbow/"))
                 # setting a color on a channel depending on its sequence number
