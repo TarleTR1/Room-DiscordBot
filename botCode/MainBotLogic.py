@@ -143,7 +143,7 @@ async def addmarker(ctx, *, args="SM TECHNOLOGY"):
             error_embed.add_field(inline=True, name="Little updated parameters (due to discord timeout):",
                                   value="┣ **{/branch/}** - to create a visual _channels branch_\n┣ **{/rainbow/}** - to create a rainbow of rooms\n┗ **{/counter/}** - to display the room number")
             error_embed.set_footer(
-                text=f"P.S. You can also change the standard rooms name and special characters, for example: {BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} " + " {/rainbow/}🎄Party{〚/counter/〛}")
+                text=f"P.S. You can also change the standard rooms name and special characters, for example: {BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} " + " {🌕🌖🌗🌘/rainbow/🌑🌒🌓🌔}🎄Party{〚/counter/〛}")
             await ctx.send(embed=error_embed)
             # sending data to the terminal
             print(f"ERROR: Incorrect data entry")
