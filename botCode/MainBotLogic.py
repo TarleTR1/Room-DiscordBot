@@ -141,7 +141,7 @@ async def addmarker(ctx, *, args="SM TECHNOLOGY"):
             error_embed.add_field(inline=True, name="Additional parameter for room names:",
                                   value="┗ **{/author/}** - parameter for displaying the _nickname_ of the creator of this room in the channel name")
             error_embed.add_field(inline=True, name="Little updated parameters (due to discord timeout):",
-                                  value="┣ **{/branch/}** - to create a visual _channels branch_\n┗ **{/counter/}** - to count all created rooms from the marker")
+                                  value="┣ **{/branch/}** - to create a visual _channels branch_\n┣ **{/rainbow/}** - to create a rainbow of rooms\n┗ **{/counter/}** - to display the room number")
             error_embed.set_footer(
                 text=f"P.S. You can also change the standard rooms name and special characters, for example: {BotConfig.BotPrefixes[0]}addmarker {randint(10 ** (18 - 1), 10 ** 18 - 1)} {randint(10 ** (18 - 1), 10 ** 18 - 1)} " + "{/branch/}🎄Party {〖/counter/〗}")
             await ctx.send(embed=error_embed)
@@ -407,8 +407,17 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
         # creating a full-fledged channel name from data
         layout_text = []
         for indicator in str("{}" + updated_database[guild.id][channel_id_reservation][1]).split("{"):
+            # add the name of the room creator to the channel name
+            if len(indicator.split("}")[0].split("/author/")) >= 2:
+                if (indicator.split("}")[0].split("/author/")[0] != "") and (
+                        indicator.split("}")[0].split("/author/")[1] != ""):
+                    layout_text.append(str(indicator.split("}")[0].split("/author/")[0]) + str(
+                        updated_database[guild.id][channel_id_reservation][2][channel_id][0]) + str(
+                        indicator.split("}")[0].split("/author/")[1]))
+                else:
+                    layout_text.append(str(updated_database[guild.id][channel_id_reservation][2][channel_id][0]))
             # when you need to create a channel branch
-            if len(indicator.split("}")[0].split("/branch/")) >= 2:
+            elif len(indicator.split("}")[0].split("/branch/")) >= 2:
                 # analysis of additional characters if they are required
                 if (indicator.split("}")[0].split("/branch/")[0] != "") and (
                         indicator.split("}")[0].split("/branch/")[1] != ""):
@@ -420,6 +429,16 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
                     layout_text.append(channels_branch_symbols[0])
                 else:
                     layout_text.append(channels_branch_symbols[1])
+            # when you need to create a rainbow of rooms
+            elif len(indicator.split("}")[0].split("/rainbow/")) >= 2:
+                # analysis for editing the color palette
+                emoji_collection = "🔴🟠🟡🟢🔵🟣"
+                if len("".join(indicator.split("}")[0].split("/rainbow/"))) >= 6:
+                    emoji_collection = "".join(indicator.split("}")[0].split("/rainbow/"))
+                # setting a color on a channel depending on its sequence number
+                layout_text.append(emoji_collection[
+                                       list(updated_database[guild.id][channel_id_reservation][2].keys()).index(
+                                           channel_id) % len(emoji_collection)])
             # when you want to print the channel number from the created by marker
             elif len(indicator.split("}")[0].split("/counter/")) >= 2:
                 if (indicator.split("}")[0].split("/counter/")[0] != "") and (
@@ -430,15 +449,6 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
                 else:
                     layout_text.append(
                         f"[{list(updated_database[guild.id][channel_id_reservation][2].keys()).index(channel_id) + 1}]")
-            # add the name of the room creator to the channel name
-            elif len(indicator.split("}")[0].split("/author/")) >= 2:
-                if (indicator.split("}")[0].split("/author/")[0] != "") and (
-                        indicator.split("}")[0].split("/author/")[1] != ""):
-                    layout_text.append(str(indicator.split("}")[0].split("/author/")[0]) + str(
-                        updated_database[guild.id][channel_id_reservation][2][channel_id][0]) + str(
-                        indicator.split("}")[0].split("/author/")[1]))
-                else:
-                    layout_text.append(str(updated_database[guild.id][channel_id_reservation][2][channel_id][0]))
             # add the rest of the text without instruction pointer
             layout_text.append("".join(indicator.split("}")[1:]))
         # comparison for matches of the old and new names
