@@ -73,7 +73,7 @@ async def help(ctx):
     help_embed.add_field(inline=True, name="List of all current commands:",
                          value=f"┣ **{BotConfig.BotPrefixes[0]}addmarker** - then enter the channel ID and category ID (you must activate _developer mode_)\n┣ **{BotConfig.BotPrefixes[0]}deletemarker** - then enter the channel ID\n┗ **{BotConfig.BotPrefixes[0]}info** - next, you will immediately see all the information about all the markers on your server")
     help_embed.add_field(inline=True, name="Technical support site:",
-                         value=f"{BotConfig.BotSite}\n```The ROOM-BOT was developed by MEB from the SM_TECHNOLOGY projects community, enjoy your use👽```")
+                         value=f"{BotConfig.BotSite}\n```The ROOM-DiscordBot was developed by MEB from the SM_TECHNOLOGY projects community, enjoy your use👽```")
     help_embed.set_footer(
         text=f"P.S. {['To add a marker, you must have administrator rights', 'To delete a marker, you must have administrator rights', 'To view information about markers, you must have administrator rights', 'To interact with the bot, you must have administrator rights', 'Sometimes dynamic room names may not change immediately, this is due to the Discord timeout (I hope that the allowed frequency of sending requests will increase soon)', 'Thank you for inviting the bot to your server, I am very pleased'][randint(0, 5)]}")
     await ctx.send(embed=help_embed)
@@ -432,7 +432,7 @@ async def creating_channels_branch(guild, channel_id_reservation, channel_id):
             # when you need to create a rainbow of rooms
             elif len(indicator.split("}")[0].split("/rainbow/")) >= 2:
                 # analysis for editing the color palette
-                emoji_collection = "💖🧡💛💚💙💜"
+                emoji_collection = "🔴🟠🟡🟢🔵🟣"
                 if len("".join(indicator.split("}")[0].split("/rainbow/"))) != 0:
                     emoji_collection = "".join(indicator.split("}")[0].split("/rainbow/"))
                 # setting a color on a channel depending on its sequence number
