@@ -13,20 +13,20 @@
 import discord as discord
 from discord.ext import commands as commands
 from configurationFile import BotConfig as BotConfig
-from re import sub as StandardizationText
 import datetime as datetime
 import pickle as pickle
 from random import randint as randint
+
+# timeout to change the settings of the room
+room_update_timeout = 5
 
 # creating a client for the bot
 client = discord.Client()
 # prefix for all ctx-commands of the bot
 client = commands.Bot(command_prefix=BotConfig.BotPrefixes)
+
 # to use the internal help command
 client.remove_command("help")
-
-# timeout to change the settings of the room
-room_update_timeout = 5
 
 
 # working with the database where all the bot markers are stored
