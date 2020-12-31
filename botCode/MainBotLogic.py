@@ -38,7 +38,7 @@ def working_with_the_database(registered_channels=None):
     except Exception as E:
         pickle.dump(
             dict({60547261464449: dict({60547261464449: [60547261464449, "{/branch/}🚪Room {/counter/}", dict()]})}),
-            open("configurationFile/database.sm", "rb+"))
+            open("configurationFile/database.sm", "wb+"))
     # uploading updated data to the database if required
     if registered_channels != None:
         pickle.dump(registered_channels, open("configurationFile/database.sm", "rb+"))
