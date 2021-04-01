@@ -314,11 +314,9 @@ async def on_voice_state_update(member: discord.Member, before, after):
         # checking for connection to a specific channel on the server
         if after.channel is not None:
             for guild in client.guilds:
-                # checking for the presence of a server in the database
-                if guild.id not in list(working_with_the_database().keys()):
-                    return
                 # checking the correspondence between the ID of the channel that the participant has connected to and the IDs of all existing and registered server markers
-                if after.channel.id in list(working_with_the_database()[guild.id].keys()):
+                if guild.id in list(working_with_the_database().keys()) and after.channel.id in list(
+                        working_with_the_database()[guild.id].keys()):
                     # creating a new room to move the participant to in the future
                     new_voice_channel = await guild.create_voice_channel(
                         name=f"🚪Server analysis for {member.display_name}...",
